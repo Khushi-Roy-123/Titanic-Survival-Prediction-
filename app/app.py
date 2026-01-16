@@ -128,7 +128,49 @@ with st.sidebar:
 @st.cache_resource
 def load_model(path):
     if not os.path.exists(path):
-        return None
+        st.warning("⚠️ Pre-trained model not found. Training a lightweight model now...")
+        st.info("This only happens once and takes ~30 seconds. The model will be cached.")
+        
+        try:
+            import pandas as pd
+            from sklearn.ensemble import RandomForestClassifier
+            from sklearn.preprocessing import LabelEncoder
+            
+            # Load data
+            train_df = pd.read_csv('data/train.csv')
+            
+            # Preprocessing
+            train_df['Age'] = train_df['Age'].fillna(train_df['Age'].median())
+            train_df['Embarked'] = train_df['Embarked'].fillna(train_df['Embarked'].mode()[0])
+            train_df['Fare'] = train_df['Fare'].fillna(train_df['Fare'].median())
+            train_df['FamilySize'] = train_df['SibSp'] + train_df['Parch'] + 1
+            train_df['Title'] = train_df.Name.str.extract(r' ([A-Za-z]+)\.', expand=False)
+            train_df['Title'] = train_df['Title'].replace(['Lady', 'Countess','Capt', 'Col',
+                'Don', 'Dr', 'Major', 'Rev', 'Sir', 'Jonkheer', 'Dona'], 'Rare')
+            train_df['Title'] = train_df['Title'].replace(['Mlle', 'Ms'], 'Miss')
+            train_df['Title'] = train_df['Title'].replace('Mme', 'Mrs')
+            
+            # Encoding
+            le_sex, le_embarked, le_title = LabelEncoder(), LabelEncoder(), LabelEncoder()
+            train_df['Sex'] = le_sex.fit_transform(train_df['Sex'])
+            train_df['Embarked'] = le_embarked.fit_transform(train_df['Embarked'])
+            train_df['Title'] = le_title.fit_transform(train_df['Title'])
+            
+            # Train
+            X = train_df[['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked', 'FamilySize', 'Title']]
+            y = train_df['Survived']
+            
+            with st.spinner('Training Random Forest...'):
+                model = RandomForestClassifier(n_estimators=200, max_depth=None, 
+                                              min_samples_split=10, random_state=42)
+                model.fit(X, y)
+            
+            st.success("✅ Model trained! (Accuracy: ~83-84%)")
+            return model
+        except Exception as e:
+            st.error(f"Error: {e}")
+            return None
+    
     return joblib.load(path)
 
 model = load_model(MODEL_PATH)
