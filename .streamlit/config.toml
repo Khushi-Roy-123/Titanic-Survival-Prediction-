@@ -2,7 +2,7 @@
 # This file tells Streamlit Cloud which Python version to use
 
 [general]
-email = ""
+email = "khushinroy@gmail.com"
 
 [server]
 headless = true
