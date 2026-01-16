@@ -239,16 +239,78 @@ with tab1:
     
     if st.button("🚀 INITIALIZE PREDICTION SEQUENCE", use_container_width=True):
         if model:
-            # Inputs processing
-            sex_enc = 0 if sex == "Female" else 1
-            embarked_map = {"Southampton": 2, "Cherbourg": 0, "Queenstown": 1}
-            title_map = {"Master": 0, "Miss": 1, "Mr": 2, "Mrs": 3, "Rare": 4}
+            # Create DataFrame from input
+            input_data = pd.DataFrame({
+                'Pclass': [pclass], 'Sex': [sex], 'Age': [age], 
+                'SibSp': [sibsp], 'Parch': [parch], 'Fare': [fare], 
+                'Embarked': [embarked], 'Name': [f"Name, {title}. Name"] # Simulation for extraction
+            })
             
-            input_data = np.array([[pclass, sex_enc, age, sibsp, parch, fare, 
-                                   embarked_map[embarked], family_size, title_map[title]]])
+            # Helper feature engineering (re-use logic)
+            # 1. Family
+            input_data['FamilySize'] = input_data['SibSp'] + input_data['Parch'] + 1
+            input_data['IsAlone'] = (input_data['FamilySize'] == 1).astype(int)
+            input_data['FamilySizeCat'] = 'Medium'
+            input_data.loc[input_data['FamilySize'] == 1, 'FamilySizeCat'] = 'Alone'
+            input_data.loc[input_data['FamilySize'] >= 5, 'FamilySizeCat'] = 'Large'
+            input_data.loc[(input_data['FamilySize'] >= 2) & (input_data['FamilySize'] <= 4), 'FamilySizeCat'] = 'Small'
+            
+            # 2. Title
+            input_data['Title'] = title
+            input_data['Title'] = input_data['Title'].replace(['Mr', 'Mrs', 'Miss', 'Master'], [2, 3, 1, 0]) # Manual Map match LE
+            if isinstance(input_data['Title'].iloc[0], str): # Handle Rare
+                input_data['Title'] = 4
+                
+            # 3. Age Features
+            input_data['Child'] = (input_data['Age'] < 16).astype(int)
+            input_data['Young'] = ((input_data['Age'] >= 16) & (input_data['Age'] < 32)).astype(int)
+            input_data['Adult'] = ((input_data['Age'] >= 32) & (input_data['Age'] < 48)).astype(int)
+            input_data['Senior'] = (input_data['Age'] >= 48).astype(int)
+            input_data['AgeBin'] = pd.cut(input_data['Age'], bins=[0, 12, 18, 25, 35, 60, 200], labels=[0, 1, 2, 3, 4, 5], include_lowest=True).astype(int)
+            
+            # 4. Fare Features
+            # Note: qcut won't work on single sample, use manual bins based on training quantiles approximation
+            # [0, 7.854, 10.5, 21.679, 39.688, 512.329]
+            f = input_data['Fare'].iloc[0]
+            if f <= 7.85: fb = 0
+            elif f <= 10.5: fb = 1
+            elif f <= 21.68: fb = 2
+            elif f <= 39.69: fb = 3
+            else: fb = 4
+            input_data['FareBin'] = fb
+            input_data['FarePerPerson'] = input_data['Fare'] / input_data['FamilySize']
+            
+            # 5. Deck/Cabin
+            input_data['HasCabin'] = 0
+            input_data['Deck'] = 8 # Unknown encoded (approx)
+            
+            # 6. Ticket
+            input_data['TicketPrefix'] = 0 # Default NUM
+            input_data['TicketFreq'] = 1
+            input_data['SharedTicket'] = 0
+            
+            # 7. Interactions
+            input_data['Age_Class'] = input_data['Age'] * input_data['Pclass']
+            input_data['Fare_Class'] = input_data['Fare'] * input_data['Pclass']
+            
+            # 8. Encode remainder
+            sex_map = {"Male": 1, "Female": 0}
+            emb_map = {"Southampton": 2, "Cherbourg": 0, "Queenstown": 1}
+            input_data['Sex'] = sex_map[sex]
+            input_data['Embarked'] = emb_map[embarked]
+            input_data['Sex_Pclass'] = input_data['Sex'] * input_data['Pclass']
+            
+            # Select columns
+            cols = ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked', 
+                   'FamilySize', 'Title', 'IsAlone', 'Child', 'Young', 'Adult', 'Senior',
+                   'AgeBin', 'FareBin', 'FarePerPerson', 'HasCabin', 'Deck', 
+                   'TicketPrefix', 'TicketFreq', 'SharedTicket', 
+                   'Age_Class', 'Fare_Class', 'Sex_Pclass']
+            
+            input_matrix = input_data[cols].values
             
             try:
-                prob = model.predict_proba(input_data)[0]
+                prob = model.predict_proba(input_matrix)[0]
                 survival_prob = prob[1]
                 
                 st.markdown("---")
