@@ -5,6 +5,16 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.0+-red.svg)](https://streamlit.io/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+## 🌐 Live Demo
+
+**Try the live application**: [Titanic Survival Predictor](https://ncu2qkwav9y5ofe8jnix3t.streamlit.app/)
+
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://ncu2qkwav9y5ofe8jnix3t.streamlit.app/)
+
+> **Note**: The app is deployed on Streamlit Cloud and is publicly accessible. Try making predictions with different passenger details!
+
+---
+
 A complete end-to-end machine learning project for predicting Titanic passenger survival using advanced feature engineering, ensemble methods, and a professional Streamlit web application.
 
 ![Titanic](https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/RMS_Titanic_3.jpg/500px-RMS_Titanic_3.jpg)
@@ -35,8 +45,8 @@ This project demonstrates production-ready ML engineering skills through:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/titanic-ml-project.git
-cd titanic-ml-project
+git clone https://github.com/Khushi-Roy-123/Titanic-Survival-Prediction-.git
+cd Titanic-Survival-Prediction-
 
 # Install dependencies
 pip install -r requirements.txt
@@ -310,9 +320,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-**Your Name** - [your.email@example.com](mailto:your.email@example.com)
+**Khushi Roy** - [khushinroy@gmail.com](mailto:khushinroy@gmail.com)
 
-**Project Link**: [https://github.com/yourusername/titanic-ml-project](https://github.com/yourusername/titanic-ml-project)
+**Project Link**: [https://github.com/Khushi-Roy-123/Titanic-Survival-Prediction-](https://github.com/Khushi-Roy-123/Titanic-Survival-Prediction-)
 
 ---
 
