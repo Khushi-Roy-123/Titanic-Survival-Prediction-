@@ -142,11 +142,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Application Header
-st.markdown('<p class="main-header">TITANIC AI PREDICTOR</p>', unsafe_allow_html=True)
-st.markdown('<p class="sub-header">>> SYSTEM STATUS: ONLINE | MODEL VERSION: ELITE v3.0 <<</p>', unsafe_allow_html=True)
-
-# Sidebar Configuration
+# Sidebar Configuration (Moved up for dynamic header)
 with st.sidebar:
     st.markdown("### 🎛️ CONTROL PANEL")
     
@@ -171,6 +167,10 @@ with st.sidebar:
     
     st.markdown("---")
     st.info("💡 **TIP:** Elite Ensemble uses Voter(RF+GB+LR) architecture for maximum precision.")
+
+# Application Header (Dynamic)
+st.markdown('<p class="main-header">TITANIC AI PREDICTOR</p>', unsafe_allow_html=True)
+st.markdown(f'<p class="sub-header">>> SYSTEM STATUS: ONLINE | MODEL VERSION: {model_choice} <<</p>', unsafe_allow_html=True)
 
 # Model Loading Logic
 @st.cache_resource(show_spinner=False)
@@ -216,7 +216,7 @@ with tab1:
     st.markdown("#### 📝 PASSENGER MANIFEST")
     
     with st.container():
-        st.markdown('<div class="dark-card">', unsafe_allow_html=True)
+        # Clean interactions
         col1, col2, col3 = st.columns(3)
         
         with col1:
