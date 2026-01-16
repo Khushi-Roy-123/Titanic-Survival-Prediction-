@@ -19,6 +19,20 @@ A complete end-to-end machine learning project for predicting Titanic passenger 
 
 ![Titanic](https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/RMS_Titanic_3.jpg/500px-RMS_Titanic_3.jpg)
 
+## 📸 Project Screenshots
+
+### 1. Main Interface (Dark Mode)
+
+![Main Interface](screenshots/main_interface.png)
+
+### 2. Prediction Results
+
+![Survival Prediction](screenshots/survival_prediction.png)
+
+### 3. Analytics Dashboard
+
+![Analytics](screenshots/analytics_dashboard.png)
+
 ## 🎯 Project Overview
 
 This project demonstrates production-ready ML engineering skills through:
