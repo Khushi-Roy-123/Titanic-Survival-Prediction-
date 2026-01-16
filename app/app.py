@@ -300,18 +300,36 @@ with tab1:
             input_data['Embarked'] = emb_map[embarked]
             input_data['Sex_Pclass'] = input_data['Sex'] * input_data['Pclass']
             
-            # Select columns
-            cols = ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked', 
-                   'FamilySize', 'Title', 'IsAlone', 'Child', 'Young', 'Adult', 'Senior',
-                   'AgeBin', 'FareBin', 'FarePerPerson', 'HasCabin', 'Deck', 
-                   'TicketPrefix', 'TicketFreq', 'SharedTicket', 
-                   'Age_Class', 'Fare_Class', 'Sex_Pclass']
+            # Feature Selection Logic based on Model Type
+            # Determine if model expects 25 features (Elite) or 9 features (Baseline/Fallback)
             
-            input_matrix = input_data[cols].values
+            use_elite_features = False
+            if hasattr(model, "n_features_in_"):
+                if model.n_features_in_ > 10:
+                    use_elite_features = True
+            elif "ELITE" in model_choice:
+                use_elite_features = True
+            
+            if use_elite_features:
+                # Full 25 Features for Elite/Advanced Models
+                cols = ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked', 
+                       'FamilySize', 'Title', 'IsAlone', 'Child', 'Young', 'Adult', 'Senior',
+                       'AgeBin', 'FareBin', 'FarePerPerson', 'HasCabin', 'Deck', 
+                       'TicketPrefix', 'TicketFreq', 'SharedTicket', 
+                       'Age_Class', 'Fare_Class', 'Sex_Pclass']
+            else:
+                # 9 Basic Features for Baseline/Fallback Model
+                # Ensure these match the fallback training columns:
+                # ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked', 'FamilySize', 'Title']
+                cols = ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare', 'Embarked', 'FamilySize', 'Title']
             
             try:
+                # Robust feature selection
+                input_matrix = input_data[cols].values
+                
                 prob = model.predict_proba(input_matrix)[0]
                 survival_prob = prob[1]
+                death_prob = prob[0] # Explicit calculation
                 
                 st.markdown("---")
                 r_col1, r_col2 = st.columns([1, 1])
@@ -329,7 +347,7 @@ with tab1:
                         st.markdown(f"""
                         <div class="result-card-death">
                             <h2 style="color:#ff416c; margin:0;">SURVIVAL IMPROBABLE</h2>
-                            <h1 style="font-size:4rem; color:white; margin:10px 0;">{prob[0]:.1%}</h1>
+                            <h1 style="font-size:4rem; color:white; margin:10px 0;">{death_prob:.1%}</h1>
                             <p style="color:#888;">CONFIDENCE INTERVAL: HIGH</p>
                         </div>
                         """, unsafe_allow_html=True)
@@ -356,6 +374,7 @@ with tab1:
                     
             except Exception as e:
                 st.error(f"Computation Error: {e}")
+                st.warning(f"Feature mismatch detected. Model expects {getattr(model, 'n_features_in_', 'Unknown')} features, but received {input_matrix.shape[1]}. Model Type: {type(model).__name__}")
 
 with tab2:
     st.markdown("#### 📉 MODEL PERFORMANCE ANALYTICS")
